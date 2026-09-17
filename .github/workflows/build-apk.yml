@@ -5,6 +5,9 @@ on:
   push:
     branches: [ main ]
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -29,3 +32,12 @@ jobs:
           name: Kurd-Anime-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+      - name: Publish APK to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v0.5.8-${GITHUB_RUN_NUMBER}"
+          gh release create "$TAG" android/app/build/outputs/apk/debug/app-debug.apk \
+            --title "Kurd Anime $TAG" \
+            --notes "Kurd Anime Android APK built automatically from main." \
+            --target "$GITHUB_SHA"
