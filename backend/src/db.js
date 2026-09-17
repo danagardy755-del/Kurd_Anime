@@ -6,7 +6,8 @@ import pg from 'pg';
 const {Pool} = pg;
 const file=dirname(fileURLToPath(import.meta.url))+'/../data/db.json';
 const pool=process.env.DATABASE_URL?new Pool({connectionString:process.env.DATABASE_URL,ssl:process.env.DATABASE_SSL==='false'?false:{rejectUnauthorized:false}}):null;
-let db=null;
+const serverlessNoDb=!pool&&process.env.VERCEL==='1';
+let db=serverlessNoDb?{users:{},favorites:{},history:{}}:null;
 let initialized=false;
 
 export async function loadDb(){
@@ -21,7 +22,7 @@ export async function loadDb(){
   try{db=JSON.parse(await readFile(file,'utf8'));}catch{db={users:{},favorites:{},history:{}};await saveDb();}
   return db;
 }
-export async function saveDb(){if(!pool)await writeFile(file,JSON.stringify(db,null,2));}
+export async function saveDb(){if(!pool&&!serverlessNoDb)await writeFile(file,JSON.stringify(db,null,2));}
 export async function ensureUser(id){
   await loadDb();
   if(pool){await pool.query('INSERT INTO users(id) VALUES($1) ON CONFLICT(id) DO NOTHING',[id]);return{id};}
