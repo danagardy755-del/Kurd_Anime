@@ -4,17 +4,18 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Handler;
 import android.view.Gravity;
 import android.view.View;
 import android.webkit.ConsoleMessage;
 import android.webkit.WebChromeClient;
-import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -23,6 +24,10 @@ import androidx.webkit.WebViewAssetLoader;
 public class MainActivity extends Activity {
     private static final String TAG = "KurdAnime";
     private WebView web;
+    private FrameLayout root;
+    private View nativeHome;
+    private final Handler handler = new Handler();
+    private boolean webReady = false;
 
     private TextView text(String value, float size, int color, boolean bold) {
         TextView v = new TextView(this);
@@ -31,49 +36,57 @@ public class MainActivity extends Activity {
         v.setTextColor(color);
         v.setGravity(Gravity.CENTER);
         if (bold) v.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        v.setPadding(20, 10, 20, 10);
+        v.setPadding(18, 8, 18, 8);
         return v;
     }
 
-    private Button button(String label) {
-        Button b = new Button(this);
-        b.setText(label);
-        b.setTextSize(16);
-        b.setTextColor(Color.WHITE);
-        b.setAllCaps(false);
-        b.setBackgroundColor(Color.rgb(230, 28, 65));
-        return b;
-    }
-
-    private void showFallback(String reason) {
+    private View nativeHome() {
         ScrollView scroll = new ScrollView(this);
         scroll.setBackgroundColor(Color.rgb(5, 15, 25));
         LinearLayout box = new LinearLayout(this);
         box.setOrientation(LinearLayout.VERTICAL);
         box.setGravity(Gravity.CENTER_HORIZONTAL);
-        box.setPadding(28, 80, 28, 80);
+        box.setPadding(28, 60, 28, 50);
 
-        box.addView(text("KURD", 48, Color.WHITE, true));
-        box.addView(text("ANIME", 48, Color.rgb(255, 33, 72), true));
-        box.addView(text("ئەپەکە ئامادەیە", 22, Color.WHITE, true));
-        box.addView(text("کێشەیەک لە بارکردنی بەشی ناوخۆ هەبوو. ئەمە fallback ـە بۆ ئەوەی شاشە بەتاڵ نەبێت.", 16, Color.LTGRAY, false));
+        ImageView logo = new ImageView(this);
+        logo.setImageResource(com.kurdanime.app.R.drawable.kurd_anime_icon);
+        logo.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        box.addView(logo, new LinearLayout.LayoutParams(-1, 210));
+        box.addView(text("Kurd Anime", 30, Color.WHITE, true));
+        box.addView(text("ئەنیمەکان لە یەک ئەپدا", 19, Color.LTGRAY, false));
 
-        Button retry = button("↻  دووبارە هەوڵدانەوە");
-        LinearLayout.LayoutParams rp = new LinearLayout.LayoutParams(-1, 58);
-        rp.topMargin = 25;
-        box.addView(retry, rp);
-        retry.setOnClickListener(v -> openWeb());
+        LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(-1, 58);
+        bp.topMargin = 30;
+        Button open = new Button(this);
+        open.setText("▶  دەستپێکردن");
+        open.setTextSize(17);
+        open.setTextColor(Color.WHITE);
+        open.setAllCaps(false);
+        open.setBackgroundColor(Color.rgb(230, 28, 65));
+        box.addView(open, bp);
+        open.setOnClickListener(v -> loadWeb());
 
-        TextView debug = text(reason == null ? "" : reason, 11, Color.GRAY, false);
-        debug.setVisibility(View.GONE);
-        box.addView(debug);
+        box.addView(text("Kurd Anime • v0.5.6", 12, Color.GRAY, false));
         scroll.addView(box);
-        setContentView(scroll);
+        return scroll;
     }
 
-    private void openWeb() {
-        if (web == null) web = createWebView();
-        setContentView(web);
+    private void showNativeHome() {
+        if (root == null) {
+            root = new FrameLayout(this);
+            nativeHome = nativeHome();
+            root.addView(nativeHome, new FrameLayout.LayoutParams(-1, -1));
+            web = createWebView();
+            web.setVisibility(View.INVISIBLE);
+            root.addView(web, new FrameLayout.LayoutParams(-1, -1));
+        }
+        setContentView(root);
+    }
+
+    private void loadWeb() {
+        showNativeHome();
+        webReady = false;
+        web.setVisibility(View.INVISIBLE);
         web.loadUrl("https://appassets.androidplatform.net/assets/index.html");
     }
 
@@ -82,7 +95,7 @@ public class MainActivity extends Activity {
         w.setBackgroundColor(Color.rgb(5, 15, 25));
         w.setWebChromeClient(new WebChromeClient() {
             @Override public boolean onConsoleMessage(ConsoleMessage message) {
-                Log.d(TAG, message.message() + " @" + message.lineNumber());
+                android.util.Log.d(TAG, message.message() + " @" + message.lineNumber());
                 return true;
             }
         });
@@ -94,12 +107,14 @@ public class MainActivity extends Activity {
                 WebResourceResponse response = loader.shouldInterceptRequest(request.getUrl());
                 return response;
             }
-
-            @Override public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-                super.onReceivedError(view, request, error);
-                if (request.isForMainFrame()) {
-                    showFallback(error == null ? "WebView error" : String.valueOf(error.getDescription()));
-                }
+            @Override public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                handler.postDelayed(() -> view.evaluateJavascript("typeof window.KurdAnimeReady !== 'undefined' && window.KurdAnimeReady === true", value -> {
+                    if ("true".equals(value)) {
+                        webReady = true;
+                        view.setVisibility(View.VISIBLE);
+                    }
+                }), 250);
             }
         });
         w.getSettings().setJavaScriptEnabled(true);
@@ -115,19 +130,18 @@ public class MainActivity extends Activity {
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
-        openWeb();
+        showNativeHome();
+        loadWeb();
     }
 
     @Override public void onDestroy() {
+        handler.removeCallbacksAndMessages(null);
         if (web != null) web.destroy();
         super.onDestroy();
     }
 
     @Override public void onBackPressed() {
-        if (web != null && web.getParent() != null && web.canGoBack()) {
-            web.goBack();
-        } else {
-            super.onBackPressed();
-        }
+        if (webReady && web != null && web.canGoBack()) web.goBack();
+        else super.onBackPressed();
     }
 }
