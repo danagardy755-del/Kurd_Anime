@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -16,7 +15,6 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -25,8 +23,6 @@ import androidx.webkit.WebViewAssetLoader;
 public class MainActivity extends Activity {
     private static final String TAG = "KurdAnime";
     private WebView web;
-    private final Handler handler = new Handler();
-    private boolean webReady = false;
 
     private TextView text(String value, float size, int color, boolean bold) {
         TextView v = new TextView(this);
@@ -77,19 +73,8 @@ public class MainActivity extends Activity {
 
     private void openWeb() {
         if (web == null) web = createWebView();
-        webReady = false;
         setContentView(web);
         web.loadUrl("https://appassets.androidplatform.net/assets/index.html");
-
-        handler.postDelayed(() -> {
-            if (web != null && !webReady && web.getParent() != null) {
-                web.evaluateJavascript("(function(){var a=document.getElementById('app');return a?a.innerHTML.length:0;})()", value -> {
-                    if ((value == null || value.equals("0") || value.equals("\"0\"")) && web != null && web.getParent() != null) {
-                        showFallback("UI did not render");
-                    }
-                });
-            }
-        }, 6500);
     }
 
     private WebView createWebView() {
@@ -108,11 +93,6 @@ public class MainActivity extends Activity {
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 WebResourceResponse response = loader.shouldInterceptRequest(request.getUrl());
                 return response;
-            }
-
-            @Override public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-                webReady = true;
             }
 
             @Override public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
@@ -139,7 +119,6 @@ public class MainActivity extends Activity {
     }
 
     @Override public void onDestroy() {
-        handler.removeCallbacksAndMessages(null);
         if (web != null) web.destroy();
         super.onDestroy();
     }
