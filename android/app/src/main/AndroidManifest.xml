@@ -3,8 +3,8 @@
     <application
         android:theme="@style/AppTheme"
         android:label="Kurd Anime"
-        android:icon="@drawable/ic_kurd_anime"
-        android:roundIcon="@drawable/ic_kurd_anime"
+        android:icon="@drawable/kurd_anime_icon"
+        android:roundIcon="@drawable/kurd_anime_icon"
         android:supportsRtl="true"
         android:usesCleartextTraffic="false">
         <activity android:name=".MainActivity" android:screenOrientation="portrait" android:exported="true">
