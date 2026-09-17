@@ -3,10 +3,11 @@
     <application
         android:theme="@style/AppTheme"
         android:label="Kurd Anime"
-        android:icon="@drawable/kurd_anime_icon"
-        android:roundIcon="@drawable/kurd_anime_icon"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:usesCleartextTraffic="false">
+        android:usesCleartextTraffic="false"
+        android:allowBackup="false">
         <activity android:name=".MainActivity" android:screenOrientation="portrait" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
