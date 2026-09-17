@@ -1,0 +1,1 @@
+window.KA_LOGO='data:image/webp;base64,UklGRiYqAABXRUJQVlA4IBgqAABwAgCdASoQABAAPm0mk0kkIyIhKQYgAgA2JaQAA3AA/v89WAAAAAA==';
