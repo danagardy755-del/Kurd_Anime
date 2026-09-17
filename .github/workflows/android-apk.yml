@@ -1,0 +1,46 @@
+name: Android APK
+
+on:
+  push:
+    branches:
+      - main
+      - kurd-anime-streaming-player
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kurd-anime
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: kurd-anime/pnpm-lock.yaml
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Expo prebuild
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Build release APK
+        run: ./android/gradlew assembleRelease --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: kurd-anime-release-apk
+          path: kurd-anime/android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
