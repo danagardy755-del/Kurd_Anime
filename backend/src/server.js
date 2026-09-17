@@ -7,7 +7,7 @@ import {sourceConfig,resolveEpisode} from './streaming.js';
 const PORT=Number(process.env.PORT||8787);
 const HOST=process.env.HOST||'0.0.0.0';
 const origin=process.env.CORS_ORIGIN||'*';
-const VERSION='0.5.1';
+const VERSION='0.5.2';
 
 function send(res,status,data){res.writeHead(status,{'content-type':'application/json; charset=utf-8','access-control-allow-origin':origin,'access-control-allow-methods':'GET,POST,DELETE,OPTIONS','access-control-allow-headers':'content-type,x-device-id'});res.end(JSON.stringify(data));}
 async function body(req){let s='';for await(const c of req)s+=c;return s?JSON.parse(s):{};}
@@ -19,6 +19,7 @@ export async function handler(req,res){
   const u=new URL(req.url||'/',`http://${req.headers.host||'localhost'}`);
   try{
     await loadDb();
+    if(u.pathname==='/'&&req.method==='GET')return send(res,200,{ok:true,service:'Kurd Anime API',version:VERSION,status:'ready',endpoints:{health:'/health',config:'/api/config',trending:'/api/anime/trending',search:'/api/anime/search?q=naruto',sources:'/api/sources'}});
     if(u.pathname==='/health')return send(res,200,{ok:true,service:'kurd-anime-api',version:VERSION,time:new Date().toISOString(),database:Boolean(process.env.DATABASE_URL),streamingSources:sourceConfig().filter(x=>x.enabled).length});
     if(u.pathname==='/api/config')return send(res,200,{appName:'Kurd Anime',version:VERSION,languages:['ku','en','ar'],defaultLanguage:'ku',features:{metadata:true,library:true,history:true,streamingProviders:true}});
     if(u.pathname==='/api/sources'&&req.method==='GET')return send(res,200,{data:sourceConfig()});
