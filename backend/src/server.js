@@ -7,12 +7,10 @@ const PORT=Number(process.env.PORT||8787);
 const HOST=process.env.HOST||'127.0.0.1';
 const origin=process.env.CORS_ORIGIN||'*';
 const VERSION='0.4.0';
-
 function send(res,status,data){res.writeHead(status,{'content-type':'application/json; charset=utf-8','access-control-allow-origin':origin,'access-control-allow-methods':'GET,POST,DELETE,OPTIONS','access-control-allow-headers':'content-type,x-device-id'});res.end(JSON.stringify(data));}
 async function body(req){let s='';for await(const c of req)s+=c;return s?JSON.parse(s):{};}
 const parts=p=>p.split('/').filter(Boolean);
 function deviceId(req,requested){return String(req.headers['x-device-id']||requested||'').trim().slice(0,128);}
-
 http.createServer(async(req,res)=>{
   if(req.method==='OPTIONS'){res.writeHead(204,{'access-control-allow-origin':origin,'access-control-allow-methods':'GET,POST,DELETE,OPTIONS','access-control-allow-headers':'content-type,x-device-id'});return res.end();}
   const u=new URL(req.url,`http://${req.headers.host||'localhost'}`);
@@ -27,9 +25,10 @@ http.createServer(async(req,res)=>{
     if(p[1]==='anime'&&p[2]&&p[3]==='episodes'&&req.method==='GET')return send(res,200,{data:await providers.episodes(p[2])});
     if(p[1]==='anime'&&p[2]&&req.method==='GET')return send(res,200,{data:await providers.detail(p[2])});
     if(p[1]==='library'){
-      const user=deviceId(req,p[2]);
+      const requested=p[2]==='device'?'':p[2];
+      const user=deviceId(req,requested);
       if(!user)return send(res,400,{error:'X-Device-ID is required'});
-      if(req.method==='GET'&&p.length===2)return send(res,200,{data:await getLibrary(user)});
+      if(req.method==='GET'&&(p.length===2||p[2]==='device'))return send(res,200,{data:await getLibrary(user)});
       if(req.method==='POST'&&p[3]==='favorites')return send(res,200,{data:await addFavorite(user,await body(req))});
       if(req.method==='DELETE'&&p[3]==='favorites'&&p[4])return send(res,200,{data:await removeFavorite(user,p[4])});
       if(req.method==='POST'&&p[3]==='history')return send(res,200,{data:await addHistory(user,await body(req))});
