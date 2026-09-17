@@ -1,6 +1,6 @@
 plugins { id 'com.android.application' }
 android { namespace 'com.kurdanime.app'; compileSdk 35
- defaultConfig { applicationId 'com.kurdanime.app'; minSdk 24; targetSdk 35; versionCode 6; versionName '0.5.1' }
+ defaultConfig { applicationId 'com.kurdanime.app'; minSdk 24; targetSdk 35; versionCode 7; versionName '0.5.2' }
 }
 
 configurations.configureEach {
