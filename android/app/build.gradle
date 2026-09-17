@@ -2,4 +2,19 @@ plugins { id 'com.android.application' }
 android { namespace 'com.kurdanime.app'; compileSdk 35
  defaultConfig { applicationId 'com.kurdanime.app'; minSdk 24; targetSdk 35; versionCode 3; versionName '0.3.0' }
 }
-dependencies { implementation 'androidx.appcompat:appcompat:1.7.0'; implementation 'androidx.webkit:webkit:1.12.1' }
+
+// Keep all Kotlin runtime artifacts on one compatible version to avoid
+// duplicate kotlin-stdlib / kotlin-stdlib-jdk7 / kotlin-stdlib-jdk8 classes.
+configurations.configureEach {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'org.jetbrains.kotlin') {
+            details.useVersion '1.8.22'
+            details.because 'Avoid duplicate Kotlin stdlib classes from mixed transitive versions'
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.webkit:webkit:1.12.1'
+}
