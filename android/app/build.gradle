@@ -1,0 +1,5 @@
+plugins { id 'com.android.application' }
+android { namespace 'com.kurdanime.app'; compileSdk 35
+ defaultConfig { applicationId 'com.kurdanime.app'; minSdk 24; targetSdk 35; versionCode 3; versionName '0.3.0' }
+}
+dependencies { implementation 'androidx.appcompat:appcompat:1.7.0'; implementation 'androidx.webkit:webkit:1.12.1' }
