@@ -7,14 +7,16 @@ import {sourceConfig,resolveEpisode} from './streaming.js';
 const PORT=Number(process.env.PORT||8787);
 const HOST=process.env.HOST||'0.0.0.0';
 const origin=process.env.CORS_ORIGIN||'*';
-const VERSION='0.5.0';
+const VERSION='0.5.1';
+
 function send(res,status,data){res.writeHead(status,{'content-type':'application/json; charset=utf-8','access-control-allow-origin':origin,'access-control-allow-methods':'GET,POST,DELETE,OPTIONS','access-control-allow-headers':'content-type,x-device-id'});res.end(JSON.stringify(data));}
 async function body(req){let s='';for await(const c of req)s+=c;return s?JSON.parse(s):{};}
 const parts=p=>p.split('/').filter(Boolean);
 function deviceId(req,requested){return String(req.headers['x-device-id']||requested||'').trim().slice(0,128);}
-http.createServer(async(req,res)=>{
+
+export async function handler(req,res){
   if(req.method==='OPTIONS'){res.writeHead(204,{'access-control-allow-origin':origin,'access-control-allow-methods':'GET,POST,DELETE,OPTIONS','access-control-allow-headers':'content-type,x-device-id'});return res.end();}
-  const u=new URL(req.url,`http://${req.headers.host||'localhost'}`);
+  const u=new URL(req.url||'/',`http://${req.headers.host||'localhost'}`);
   try{
     await loadDb();
     if(u.pathname==='/health')return send(res,200,{ok:true,service:'kurd-anime-api',version:VERSION,time:new Date().toISOString(),database:Boolean(process.env.DATABASE_URL),streamingSources:sourceConfig().filter(x=>x.enabled).length});
@@ -38,4 +40,8 @@ http.createServer(async(req,res)=>{
     }
     return send(res,404,{error:'Route not found'});
   }catch(e){console.error(e);return send(res,502,{error:e.message||'Upstream error'});}
-}).listen(PORT,HOST,()=>console.log(`Kurd Anime API listening on http://${HOST}:${PORT}`));
+}
+
+if(process.env.VERCEL!=='1'){
+  http.createServer(handler).listen(PORT,HOST,()=>console.log(`Kurd Anime API listening on http://${HOST}:${PORT}`));
+}
