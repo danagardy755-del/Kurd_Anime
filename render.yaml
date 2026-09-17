@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: kurd-anime-api
+    runtime: docker
+    rootDir: backend
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CORS_ORIGIN
+        value: '*'
+      - key: ANILIST_URL
+        value: https://graphql.anilist.co
+      - key: JIKAN_URL
+        value: https://api.jikan.moe/v4
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kurd-anime-db
+          property: connectionString
+
+databases:
+  - name: kurd-anime-db
+    plan: free
