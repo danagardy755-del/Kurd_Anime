@@ -3,18 +3,16 @@ android { namespace 'com.kurdanime.app'; compileSdk 35
  defaultConfig { applicationId 'com.kurdanime.app'; minSdk 24; targetSdk 35; versionCode 3; versionName '0.3.0' }
 }
 
-// Keep all Kotlin runtime artifacts on one compatible version to avoid
-// duplicate kotlin-stdlib / kotlin-stdlib-jdk7 / kotlin-stdlib-jdk8 classes.
+// Kotlin 1.8+ merged the JDK7/JDK8 stdlib classes into kotlin-stdlib.
+// Exclude the legacy split artifacts so Android's duplicate-class check passes.
 configurations.configureEach {
-    resolutionStrategy.eachDependency { details ->
-        if (details.requested.group == 'org.jetbrains.kotlin') {
-            details.useVersion '1.8.22'
-            details.because 'Avoid duplicate Kotlin stdlib classes from mixed transitive versions'
-        }
-    }
+    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
+    resolutionStrategy.force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
 }
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.webkit:webkit:1.12.1'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
 }
