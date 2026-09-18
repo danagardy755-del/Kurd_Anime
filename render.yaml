@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: kurd-anime-api
+    runtime: docker
+    rootDir: backend
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: CORS_ORIGIN
+        value: '*'
+      - key: ANILIST_URL
+        value: https://graphql.anilist.co
+      - key: JIKAN_URL
+        value: https://api.jikan.moe/v4
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kurd-anime-db
+          property: connectionString
+      - key: KURD_CDN_BASE_URL
+        sync: false
+      - key: KURD_CDN_TEMPLATE
+        value: '{animeId}/{episode}.m3u8'
+      - key: YOUTUBE_SOURCE_ENABLED
+        value: 'false'
+      - key: CRUNCHYROLL_PARTNER_ENABLED
+        value: 'false'
+      - key: CRUNCHYROLL_PARTNER_BASE_URL
+        sync: false
+
+databases:
+  - name: kurd-anime-db
+    plan: free

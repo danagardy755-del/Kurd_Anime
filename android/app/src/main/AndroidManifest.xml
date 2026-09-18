@@ -1,0 +1,18 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <application
+        android:theme="@style/AppTheme"
+        android:label="Kurd Anime"
+        android:icon="@drawable/kurd_anime_icon"
+        android:roundIcon="@drawable/kurd_anime_icon"
+        android:supportsRtl="true"
+        android:usesCleartextTraffic="false"
+        android:allowBackup="false">
+        <activity android:name=".MainActivity" android:screenOrientation="portrait" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

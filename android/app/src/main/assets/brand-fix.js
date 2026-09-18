@@ -1,0 +1,1 @@
+(function(){function fix(){document.querySelectorAll('.brand-logo').forEach(function(i){if(window.KA_LOGO&&i.src!==window.KA_LOGO)i.src=window.KA_LOGO;});}new MutationObserver(fix).observe(document.body,{childList:true,subtree:true});setTimeout(fix,50);setTimeout(fix,500);})();
